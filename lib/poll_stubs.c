@@ -57,6 +57,7 @@ decode_sigset(value vset, sigset_t * set)
 	}
 }
 
+#define S_IN_NS 1000000000LL
 value
 caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 {
@@ -66,17 +67,17 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 	struct timespec ts;
 	sigset_t sigmask;
 	nfds_t nfds;
-	double d;
+	int64_t timo64;
 	int r;
 
 	fds = Caml_ba_data_val(v_fds);
 	nfds = Int_val(v_nfds);
-	d = Double_val(v_timo);
-	if (d == -1.0)
+	timo64 = Int64_val(v_timo);
+	if (timo64 == -1LL)
 		timo = NULL;
 	else {
-		ts.tv_sec = (time_t) d;
-		ts.tv_nsec = (d - ts.tv_sec) * 1e9;
+		ts.tv_sec = (time_t)(timo64 / S_IN_NS);
+		ts.tv_nsec = (time_t)(timo64 % S_IN_NS);
 		timo = &ts;
 	}
 

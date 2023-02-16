@@ -36,11 +36,17 @@ module T = struct
     let _pollfds = Iomux.Poll.create () in
     ()
 
+  let ppoll_timo () =
+    let pollfds = Iomux.Poll.create () in
+    let one_second = 1000_000_000L in
+    ignore @@ Iomux.Poll.ppoll pollfds 0 (Nanoseconds one_second) []
+
   let () =
     let open Alcotest in
     let wlc = U.with_leak_checker in
     run "Iomux" [
       "unit",                  [ test_case "" `Quick (wlc basic) ];
+      "ppoll_timo",            [ test_case "" `Quick (wlc ppoll_timo) ];
     ]
 
 end

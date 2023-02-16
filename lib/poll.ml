@@ -2,7 +2,7 @@ type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Arr
 
 module Raw = struct
   external poll : buffer -> int -> int -> int = "caml_iomux_poll"
-  external ppoll : buffer -> int -> float -> int list -> int = "caml_iomux_ppoll"
+  external ppoll : buffer -> int -> int64 -> int list -> int = "caml_iomux_ppoll"
   external set_index : buffer -> int -> int -> int -> unit = "caml_iomux_poll_set_index" [@@noalloc]
   external get_revents : buffer -> int -> int = "caml_iomux_poll_get_revents" [@@noalloc]
   external get_fd : buffer -> int -> int = "caml_iomux_poll_get_fd" [@@noalloc]
@@ -54,13 +54,13 @@ let poll t used timeout =
 type ppoll_timeout =
   | Infinite
   | Nowait
-  | Timeout of float
+  | Nanoseconds of int64
 
 let ppoll t used timeout sigmask =
   let timeout = match timeout with
-    | Infinite -> (-1.0)
-    | Nowait -> 0.
-    | Timeout timo -> timo
+    | Infinite -> Int64.minus_one
+    | Nowait -> Int64.zero
+    | Nanoseconds timo -> timo
   in
   Raw.ppoll t.buffer used timeout sigmask
 
