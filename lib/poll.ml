@@ -1,3 +1,5 @@
+open Util
+
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
 module Raw = struct
@@ -6,7 +8,6 @@ module Raw = struct
   external set_index : buffer -> int -> int -> int -> unit = "caml_iomux_poll_set_index" [@@noalloc]
   external get_revents : buffer -> int -> int = "caml_iomux_poll_get_revents" [@@noalloc]
   external get_fd : buffer -> int -> int = "caml_iomux_poll_get_fd" [@@noalloc]
-  external max_open_files : unit -> int = "caml_iomux_poll_max_open_files" [@@noalloc]
 end
 
 module Flags = struct
@@ -25,20 +26,14 @@ module Flags = struct
   let mem a b = (a land b) <> 0
 end
 
-let fd_of_unix fd = (Obj.magic fd : int)
-
-let unix_of_fd (fd : int) : Unix.file_descr = (Obj.magic fd)
-
 let invalid_fd = unix_of_fd (-1)
-
-let max_open_files = Raw.max_open_files
 
 type t = {
   buffer : buffer;
   maxfds : int;
 }
 
-type timeout =
+type poll_timeout =
   | Infinite
   | Nowait
   | Milliseconds of int
@@ -84,7 +79,7 @@ let get_fd t index =
   guard_index t index;
   Raw.get_fd t.buffer index |> unix_of_fd
 
-let create ?(maxfds=max_open_files ()) () =
+let create ?(maxfds=Util.max_open_files ()) () =
   let len = maxfds * Config.sizeof_pollfd in
   let buffer = Bigarray.(Array1.create char c_layout len) in
   { buffer; maxfds }

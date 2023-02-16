@@ -12,6 +12,10 @@
 /* only defined in the runtime with CAML_INTERNALS */
 CAMLextern int caml_convert_signal_number (int);
 
+/*
+ * Poll
+ */
+
 value
 caml_iomux_poll(value v_fds, value v_nfds, value v_timo)
 {
@@ -136,6 +140,10 @@ caml_iomux_poll_get_fd(value v_fds, value v_index)
 
 	return (Val_int(pfd->fd));
 }
+
+/*
+ * Util
+ */
 
 value /* noalloc */
 caml_iomux_poll_max_open_files(value v_unit)

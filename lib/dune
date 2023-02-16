@@ -5,8 +5,8 @@
 (library
  (name iomux)
  (public_name iomux)
- (modules iomux config poll)
+ (modules iomux config poll util)
  (libraries unix)
  (foreign_stubs
   (language c)
-  (names poll_stubs)))
+  (names iomux_stubs)))
