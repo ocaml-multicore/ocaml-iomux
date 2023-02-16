@@ -32,15 +32,15 @@ end
 
 module T = struct
 
-  let retv () =
-    let _pollfs = Iomux.Poll.create () in
+  let basic () =
+    let _pollfds = Iomux.Poll.create () in
     ()
 
   let () =
     let open Alcotest in
     let wlc = U.with_leak_checker in
     run "Iomux" [
-      "unit",                  [ test_case "" `Quick (wlc retv) ];
+      "unit",                  [ test_case "" `Quick (wlc basic) ];
     ]
 
 end
