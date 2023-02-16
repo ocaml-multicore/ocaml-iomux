@@ -14,10 +14,10 @@ type timeout =
 module Raw = struct
   external poll : buffer -> int -> int -> int = "caml_iomux_poll"
   external ppoll : buffer -> int -> float -> int list -> int = "caml_iomux_ppoll"
-  external set_index : buffer -> int -> int -> int -> unit = "caml_iomux_set_index" [@@noalloc]
+  external set_index : buffer -> int -> int -> int -> unit = "caml_iomux_poll_set_index" [@@noalloc]
   external get_revents : buffer -> int -> int = "caml_iomux_poll_get_revents" [@@noalloc]
-  external get_fd : buffer -> int -> int = "caml_iomux_get_fd" [@@noalloc]
-  external max_open_files : unit -> int = "caml_iomux_max_open_files" [@@noalloc]
+  external get_fd : buffer -> int -> int = "caml_iomux_poll_get_fd" [@@noalloc]
+  external max_open_files : unit -> int = "caml_iomux_poll_max_open_files" [@@noalloc]
 end
 
 let poll t used timeout =

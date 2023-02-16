@@ -13,7 +13,7 @@
 CAMLextern int caml_convert_signal_number (int);
 
 value
-caml_poll2(value v_fds, value v_nfds, value v_timo)
+caml_iomux_poll(value v_fds, value v_nfds, value v_timo)
 {
 	CAMLparam3(v_fds, v_nfds, v_timo);
 	struct pollfd *fds;
@@ -58,7 +58,7 @@ decode_sigset(value vset, sigset_t * set)
 }
 
 value
-caml_ppoll2(value v_fds, value v_nfds, value v_timo, value v_sigmask)
+caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 {
 	CAMLparam4(v_fds, v_nfds, v_timo, v_sigmask);
 	struct pollfd *fds;
@@ -109,7 +109,7 @@ caml_ppoll2(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 	    (sizeof(struct pollfd) * (Int_val (v_index))))
 
 value /* noalloc */
-caml_poll2_set_index(value v_fds, value v_index, value v_fd, value v_events)
+caml_iomux_poll_set_index(value v_fds, value v_index, value v_fd, value v_events)
 {
 	struct pollfd *pfd = pollfd_of_index(v_fds, v_index);
 
@@ -120,7 +120,7 @@ caml_poll2_set_index(value v_fds, value v_index, value v_fd, value v_events)
 }
 
 value /* noalloc */
-caml_poll2_get_revents(value v_fds, value v_index)
+caml_iomux_poll_get_revents(value v_fds, value v_index)
 {
 	struct pollfd *pfd = pollfd_of_index(v_fds, v_index);
 
@@ -128,7 +128,7 @@ caml_poll2_get_revents(value v_fds, value v_index)
 }
 
 value /* noalloc */
-caml_poll2_get_fd(value v_fds, value v_index)
+caml_iomux_poll_get_fd(value v_fds, value v_index)
 {
 	struct pollfd *pfd = pollfd_of_index(v_fds, v_index);
 
@@ -136,7 +136,7 @@ caml_poll2_get_fd(value v_fds, value v_index)
 }
 
 value /* noalloc */
-caml_poll2_max_open_files(value v_unit)
+caml_iomux_poll_max_open_files(value v_unit)
 {
 	return (Val_int(sysconf(_SC_OPEN_MAX)));
 }
