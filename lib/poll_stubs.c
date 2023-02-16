@@ -104,6 +104,7 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 
 	CAMLreturn(Val_int(r));
 }
+#undef S_IN_NS
 
 #define pollfd_of_index(vfds, vindex)				\
 	(Caml_ba_data_val(vfds) +				\
