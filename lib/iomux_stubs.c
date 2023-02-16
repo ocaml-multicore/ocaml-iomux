@@ -69,7 +69,7 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 	struct pollfd *fds;
 	struct timespec *timo;
 	struct timespec ts;
-	sigset_t sigmask;
+	sigset_t *psigmask, sigmask;
 	nfds_t nfds;
 	int64_t timo64;
 	int r;
@@ -85,7 +85,12 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 		timo = &ts;
 	}
 
-	decode_sigset(v_sigmask, &sigmask);
+	if (v_sigmask = Val_emptylist)
+		psigmask = NULL;
+	else {
+		decode_sigset(v_sigmask, &sigmask);
+		psigmask = &sigmask;
+	}
 #if 0
 	for (int i = 0; i < nfds; i++) {
 		printf("[%d] fd = %d events=0x%x (nfds=%d)\n",
@@ -93,7 +98,7 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 	}
 #endif
 	caml_enter_blocking_section();
-	r = ppoll(fds, nfds, timo, &sigmask);
+	r = ppoll(fds, nfds, timo, psigmask);
 	caml_leave_blocking_section();
 	if (r == -1) /* this allocs */
 		caml_uerror("poll", Nothing);
