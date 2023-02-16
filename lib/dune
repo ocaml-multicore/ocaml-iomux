@@ -1,0 +1,12 @@
+(rule
+ (targets config.ml)
+ (action (run ./include/discover.exe)))
+
+(library
+ (name iomux)
+ (public_name iomux)
+ (modules iomux config poll)
+ (libraries unix)
+ (foreign_stubs
+  (language c)
+  (names poll_stubs)))
