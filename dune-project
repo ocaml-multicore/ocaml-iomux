@@ -19,7 +19,11 @@
  (name iomux)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune alcotest :with_test)
+ (depends
+   ocaml
+   dune
+   dune-configurator
+   alcotest :with_test)
  (tags
   (topics "to describe" your project)))
 
