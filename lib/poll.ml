@@ -84,6 +84,8 @@ let create ?(maxfds=Util.max_open_files ()) () =
   let buffer = Bigarray.(Array1.create char c_layout len) in
   { buffer; maxfds }
 
+let maxfds t = t.maxfds
+
 let iter_ready t nready (f : int -> Unix.file_descr -> int -> unit) =
   let rec loop index nready =
     match nready with

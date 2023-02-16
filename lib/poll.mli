@@ -17,6 +17,8 @@ type t
 
 val create : ?maxfds:int -> unit -> t
 
+val maxfds : t -> int
+
 type poll_timeout = Infinite | Nowait | Milliseconds of int
 
 val poll : t -> int -> poll_timeout -> int
