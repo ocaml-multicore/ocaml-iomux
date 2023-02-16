@@ -13,7 +13,7 @@ depends: [
   "ocaml"
   "dune" {>= "3.6"}
   "dune-configurator"
-  "alcotest" {with-test}
+  "alcotest" {with_test}
   "odoc" {with-doc}
 ]
 build: [

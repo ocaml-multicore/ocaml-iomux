@@ -23,7 +23,7 @@
    ocaml
    dune
    dune-configurator
-   alcotest :with_test)
+   (alcotest :with_test))
  (tags
   (topics "to describe" your project)))
 
