@@ -86,11 +86,15 @@ let get_fd t index =
 let create ?(maxfds=Util.max_open_files ()) () =
   let len = maxfds * Config.sizeof_pollfd in
   let buffer = Bigarray.(Array1.create char c_layout len) in
-  { buffer; maxfds }
+  let t = { buffer; maxfds } in
+  for i = 0 to maxfds - 1 do
+    invalidate_index t i
+  done;
+  t
 
 let maxfds t = t.maxfds
 
-let iter_ready t nready (f : int -> Unix.file_descr -> int -> unit) =
+let iter_ready t nready (f : int -> Unix.file_descr -> Flags.t -> unit) =
   let rec loop index nready =
     match nready with
     | 0 -> ()
