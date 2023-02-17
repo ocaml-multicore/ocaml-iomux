@@ -38,7 +38,7 @@ caml_iomux_poll(value v_fds, value v_nfds, value v_timo)
 	r = poll(fds, nfds, timo);
 	caml_leave_blocking_section();
 	if (r == -1) /* this allocs */
-		caml_uerror("poll", Nothing);
+		uerror("poll", Nothing);
 
 #if 0
 	printf("r=%d\n", r);
@@ -101,7 +101,7 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 	r = ppoll(fds, nfds, timo, psigmask);
 	caml_leave_blocking_section();
 	if (r == -1) /* this allocs */
-		caml_uerror("poll", Nothing);
+		uerror("poll", Nothing);
 
 #if 0
 	printf("r=%d\n", r);
