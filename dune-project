@@ -1,30 +1,21 @@
 (lang dune 3.6)
-
 (name iomux)
-
 (generate_opam_files true)
-
 (source
- (github username/reponame))
-
-(authors "Author Name")
-
-(maintainers "Maintainer Name")
-
-(license LICENSE)
-
-(documentation https://url/to/documentation)
+ (github haesbaert/ocaml-iomux))
+(authors "Christiano Haesbaert")
+(maintainers "Christiano Haesbaert")
+(license ISC)
+(documentation https://haesbaert.github.io/ocaml-iomux)
 
 (package
  (name iomux)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "IO Multiplexer bindings")
+ (description "Low level bindings for Unix IO Multiplexers (poll/ppoll/kevent/epoll)")
  (depends
-   ocaml
+   (ocaml (>= 4.08))
    dune
    dune-configurator
    (alcotest :with_test))
  (tags
-  (topics "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
+  (io multiplexing poll ppoll epoll kevent kqueue)))
