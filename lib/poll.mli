@@ -54,9 +54,9 @@ val ppoll : t -> int -> ppoll_timeout -> int list -> int
 val set_index : t -> int -> Unix.file_descr -> Flags.t -> unit
 (** [set_index t index fd flag] modifies the internal buffer at
     [index] to listen to [flag] events of [fd]. This overwrites any
-    previous value of [flag] and [fd] internally. -1 can be used to
-    deactivate the slot, but usage of {!invalidate_index} is
-    preferred. *)
+    previous value of [flag] and [fd] internally. {!invalid_fd} (-1)
+    can be used to deactivate the slot, but usage of
+    {!invalidate_index} is preferred. *)
 
 val invalidate_index : t -> int -> unit
 (** [invalidate_index t index] modifies the internal buffer by
@@ -73,6 +73,7 @@ val get_fd : t -> int -> Unix.file_descr
 val iter_ready : t -> int -> (int -> Unix.file_descr -> Flags.t -> unit) -> unit
 (** [iter_ready t nready fn] scans the internal buffer for every ready
     file descriptor and calls [fn index fd flags], the scanning is
-    aborted after [nready] entries are found. Typical usage is that
+    aborted after [nready] entries are found. Invalid file descriptors
+    (set to -1 via invalidate_index) are skipped. Typical usage is that
     [nready] is the return of {!poll} or {!ppoll}. The internal buffer
     is left unmodified. *)
