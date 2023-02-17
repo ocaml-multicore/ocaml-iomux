@@ -1,10 +1,11 @@
-(* [@@@warning "-32"] *)
+open Iomux
+
 exception Fdleak
 
 let _check_raises = Alcotest.check_raises
 let _check_string = Alcotest.(check string)
-let _check_int = Alcotest.(check int)
-let _check_bool = Alcotest.(check bool)
+let check_int = Alcotest.(check int)
+let check_bool = Alcotest.(check bool)
 
 module U = struct
   let with_leak_checker (f : unit -> unit) () =
@@ -33,8 +34,20 @@ end
 module T = struct
 
   let basic () =
-    let _pollfds = Iomux.Poll.create () in
-    ()
+    let poll = Iomux.Poll.create ~maxfds:16 () in
+    let r, w = Unix.pipe () in
+    Poll.set_index poll 0 r Poll.Flags.pollin;
+    let b = Bytes.create 1 in
+    check_int "write" (Unix.write w b 0 1) 1;
+    let nready = Poll.poll poll 1 Nowait in
+    check_int "nready" nready 1;
+    let fd = Poll.get_fd poll 0 in
+    let revents = Poll.get_revents poll 0 in
+    check_bool "fd" true (r = fd);
+    check_bool "revents" true (Poll.Flags.mem revents Poll.Flags.pollin);
+    check_bool "revents-eq" true (revents = Poll.Flags.pollin);
+    Unix.close w;
+    Unix.close r
 
   let ppoll_timo () =
     let pollfds = Iomux.Poll.create () in
