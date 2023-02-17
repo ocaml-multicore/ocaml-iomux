@@ -24,6 +24,9 @@ module Flags = struct
   let ( + ) = ( lor )
 
   let mem a b = (a land b) <> 0
+
+  let to_int = Fun.id
+  let of_int = Fun.id
 end
 
 let invalid_fd = unix_of_fd (-1)

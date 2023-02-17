@@ -10,18 +10,43 @@ val create : ?maxfds:int -> unit -> t
 val maxfds : t -> int
 (** [maxfds t] is the maximum number of file descriptor slots allocated for [t]. *)
 
-module Flags :
-  sig
-    type t = int
-    val pollin : int
-    val pollout : int
-    val pollerr : int
-    val pollhup : int
-    val pollnval : int
-    val empty : int
-    val ( + ) : int -> int -> int
-    val mem : int -> int -> bool
-  end
+(** The set of flags associated with a file descriptor event. *)
+module Flags : sig
+
+  type t
+  (** The actual set. *)
+
+  val pollin : t
+  (** POLLIN from poll(2). *)
+
+  val pollout : t
+  (** POLLOUT from poll(2). *)
+
+  val pollerr : t
+  (** POLLERR from poll(2). Only expected as output, invalid as input. *)
+
+  val pollhup : t
+  (** POLLHUP from poll(2). Only expected as output, invalid as input. *)
+
+  val pollnval : t
+  (** POLLNVAL from poll(2). Only expected as output, invalid as input. *)
+
+  val empty : t
+  (** aka zero. *)
+
+  val ( + ) : t -> t -> t
+  (** The union of flags, fancy way of doing {!lor}. *)
+
+  val mem : t -> t -> bool
+  (** [mem x y] checks if [y] belongs to [m]. The fancy way of doing {!land}. *)
+
+  val to_int : t -> int
+  (** [to_int x] exposes [x] as an integer, this is an identity function. *)
+
+  val of_int : int -> t
+  (** [of_int x] imports [x] as {!t}, this is an identity function. *)
+
+end
 
 val invalid_fd : Unix.file_descr
 (** [invalid_fd] is the {!Unix.file_descr} of value -1. *)
