@@ -70,5 +70,9 @@ val get_revents : t -> int -> Flags.t
 val get_fd : t -> int -> Unix.file_descr
 (** [get_fd t index] is the file descriptor associated with [index]. *)
 
-val iter_ready : t -> int -> (int -> Unix.file_descr -> int -> unit) -> unit
-(**  TODO *)
+val iter_ready : t -> int -> (int -> Unix.file_descr -> Flags.t -> unit) -> unit
+(** [iter_ready t nready fn] scans the internal buffer for every ready
+    file descriptor and calls [fn index fd flags], the scanning is
+    aborted after [nready] entries are found. Typical usage is that
+    [nready] is the return of {!poll} or {!ppoll}. The internal buffer
+    is left unmodified. *)
