@@ -54,12 +54,44 @@ module T = struct
     let one_second = 1000_000_000L in
     ignore @@ Iomux.Poll.ppoll pollfds 0 (Nanoseconds one_second) []
 
+  let example () =
+    let poll = Poll.create () in
+    let pipe_r, pipe_w = Unix.pipe () in
+    (* We'll use index 0 for the pipe, and 7 for pipe output, just because.
+       First we want to make sure we can write to the pipe without blocking *)
+    Poll.set_index poll 7 pipe_w Poll.Flags.pollout;
+    (* Wait why 8 ? we tell the kernel the number of file descriptors to scan,
+       unset filedescriptors are skipped, so indexes 1-6 are ignored *)
+    let nready = Poll.poll poll 8 Nowait in
+    check_int "nread 1" 1 nready; (* only one entry should be ready, since we added only one *)
+    let n = Unix.write pipe_w (Bytes.create 1) 0 1 in
+    check_int "n" 1 n;
+    (* We'll now poll for both events, note that we don't need to re-add index 7 *)
+    Poll.set_index poll 0 pipe_r Poll.Flags.pollin;
+    let nready = Poll.poll poll 8 Nowait in
+    check_int "nready" 2 nready;
+    Poll.iter_ready poll nready (fun index fd flags ->
+        if Poll.Flags.mem flags Poll.Flags.pollin then
+          Printf.printf "fd %d (from index %d) can be read without blocking\n%!"
+            (Util.fd_of_unix fd) index
+        else if Poll.Flags.mem flags Poll.Flags.pollout then
+          Printf.printf "fd %d (from index %d) can be written without blocking\n%!"
+            (Util.fd_of_unix fd) index
+        else
+          assert false);
+    Unix.close pipe_r;
+    Unix.close pipe_w;
+    (* clean up *)
+    Poll.invalidate_index poll 0;
+    Poll.invalidate_index poll 7
+
   let () =
     let open Alcotest in
     let wlc = U.with_leak_checker in
     run "Iomux" [
       "unit",                  [ test_case "" `Quick (wlc basic) ];
       "ppoll_timo",            [ test_case "" `Quick (wlc ppoll_timo) ];
+      "example",               [ test_case "" `Quick (wlc example) ];
     ]
 
 end
