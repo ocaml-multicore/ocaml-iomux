@@ -1,4 +1,4 @@
-# Io Multiplexers for Ocaml (poll/kevent/epoll)
+# Io Multiplexers for Ocaml
 
 API ONLINE^W^W
 
