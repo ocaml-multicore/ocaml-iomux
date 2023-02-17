@@ -19,6 +19,9 @@ module Flags : sig
   val pollin : t
   (** POLLIN from poll(2). *)
 
+  val pollpri : t
+  (** POLLPRI from poll(2). *)
+
   val pollout : t
   (** POLLOUT from poll(2). *)
 

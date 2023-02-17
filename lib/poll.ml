@@ -14,6 +14,7 @@ module Flags = struct
   type t = int
 
   let pollin = Config.pollin
+  let pollpri = Config.pollpri
   let pollout = Config.pollout
   let pollerr = Config.pollerr
   let pollhup = Config.pollhup

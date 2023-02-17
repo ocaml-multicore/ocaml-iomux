@@ -6,6 +6,7 @@ let () =
     C.C_define.import c ~includes:["poll.h"]
       C.C_define.Type.[
         "POLLIN", Int;
+        "POLLPRI", Int;
         "POLLOUT", Int;
         "POLLERR", Int;
         "POLLHUP", Int;
