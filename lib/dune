@@ -9,4 +9,13 @@
  (libraries unix)
  (foreign_stubs
   (language c)
+  (flags "-Wall"
+         ; "-Wstrict-prototypes"
+         ; "-Wmissing-prototypes"
+         ; "-Wmissing-declarations"
+         "-Wshadow"
+         "-Wpointer-arith"
+         "-Wcast-qual"
+         "-Wsign-compare"
+         "-Werror")
   (names iomux_stubs)))
