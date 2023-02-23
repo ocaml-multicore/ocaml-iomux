@@ -13,42 +13,49 @@ val maxfds : t -> int
 (** The set of flags associated with a file descriptor event. *)
 module Flags : sig
 
-  type t
+  type output = < output: unit; >
+
+  type 'a input = < .. > as 'a
+
+  type input_only = < >
+
+  type 'inout t
   (** The actual set. *)
 
-  val pollin : t
+  val pollin : 'a input t
   (** POLLIN from poll(2). *)
 
-  val pollpri : t
+  val pollpri : 'a input t
   (** POLLPRI from poll(2). *)
 
-  val pollout : t
+  val pollout : 'a input t
   (** POLLOUT from poll(2). *)
 
-  val pollerr : t
+  val pollerr : output t
   (** POLLERR from poll(2). Only expected as output, invalid as input. *)
 
-  val pollhup : t
+  val pollhup : output t
   (** POLLHUP from poll(2). Only expected as output, invalid as input. *)
 
-  val pollnval : t
+  val pollnval : output t
   (** POLLNVAL from poll(2). Only expected as output, invalid as input. *)
 
-  val empty : t
+  val empty : 'a input t
   (** aka zero. *)
 
-  val ( + ) : t -> t -> t
+  val ( + ) : 'a t -> 'a t -> 'a t
   (** The union of flags, fancy way of doing {!lor}. *)
 
-  val mem : t -> t -> bool
+  val mem : 'a t -> 'b t -> bool
   (** [mem x y] checks if [y] belongs to [m]. The fancy way of doing {!land}. *)
 
-  val to_int : t -> int
+  val to_int : 'inout t -> int
   (** [to_int x] exposes [x] as an integer, this is an identity function. *)
 
-  val of_int : int -> t
+  val of_int : int -> 'inout t
   (** [of_int x] imports [x] as {!t}, this is an identity function. *)
 
+  val input_of_int : int -> input_only t
 end
 
 val invalid_fd : Unix.file_descr
@@ -79,7 +86,7 @@ val ppoll : t -> int -> ppoll_timeout -> int list -> int
     nanoseconds and a list of signals that are atomically masked
     during execution and restored uppon return. *)
 
-val set_index : t -> int -> Unix.file_descr -> Flags.t -> unit
+val set_index : t -> int -> Unix.file_descr -> Flags.input_only Flags.t -> unit
 (** [set_index t index fd flag] modifies the internal buffer at
     [index] to listen to [flag] events of [fd]. This overwrites any
     previous value of [flag] and [fd] internally. {!invalid_fd} (-1)
@@ -91,14 +98,14 @@ val invalidate_index : t -> int -> unit
     invalidating [index]. The kernel will ignore that slot. We also
     clear flags, just for kicks. *)
 
-val get_revents : t -> int -> Flags.t
+val get_revents : t -> int -> Flags.output Flags.t
 (** [get_revents t index] is the returned event flags set after a call
     to {!poll} or {!ppoll}. *)
 
 val get_fd : t -> int -> Unix.file_descr
 (** [get_fd t index] is the file descriptor associated with [index]. *)
 
-val iter_ready : t -> int -> (int -> Unix.file_descr -> Flags.t -> unit) -> unit
+val iter_ready : t -> int -> (int -> Unix.file_descr -> Flags.output Flags.t -> unit) -> unit
 (** [iter_ready t nready fn] scans the internal buffer for every ready
     file descriptor and calls [fn index fd flags], the scanning is
     aborted after [nready] entries are found. Invalid file descriptors

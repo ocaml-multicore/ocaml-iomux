@@ -11,7 +11,13 @@ module Raw = struct
 end
 
 module Flags = struct
-  type t = int
+  type output = < output: unit; >
+
+  type 'a input = < .. > as 'a
+
+  type input_only = < >
+
+  type 'a t = int
 
   let pollin = Config.pollin
   let pollpri = Config.pollpri
@@ -28,6 +34,11 @@ module Flags = struct
 
   let to_int = Fun.id
   let of_int = Fun.id
+
+  let input_of_int n =
+    if mem pollerr n || mem pollhup n || mem pollnval n then
+      invalid_arg "Poll.Flag.input_of_int";
+    n
 end
 
 let invalid_fd = unix_of_fd (-1)
@@ -94,7 +105,7 @@ let create ?(maxfds=Util.max_open_files ()) () =
 
 let maxfds t = t.maxfds
 
-let iter_ready t nready (f : int -> Unix.file_descr -> Flags.t -> unit) =
+let iter_ready t nready (f : int -> Unix.file_descr -> Flags.output Flags.t -> unit) =
   let rec loop index nready =
     match nready with
     | 0 -> ()
