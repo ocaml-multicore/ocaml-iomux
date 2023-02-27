@@ -29,12 +29,15 @@ module U = struct
 
   let _coinflip () = Random.bool ()
 
+  let one_second_in_ns = 1000_000_000L
+  let hundred_ms_in_ns = 100_000_000L
+
 end
 
 module T = struct
 
   let basic () =
-    let poll = Iomux.Poll.create ~maxfds:16 () in
+    let poll = Poll.create ~maxfds:16 () in
     let r, w = Unix.pipe () in
     Poll.set_index poll 0 r Poll.Flags.pollin;
     let b = Bytes.create 1 in
@@ -50,9 +53,20 @@ module T = struct
     Unix.close r
 
   let ppoll_timo () =
-    let pollfds = Iomux.Poll.create () in
-    let one_second = 1000_000_000L in
-    ignore @@ Iomux.Poll.ppoll pollfds 0 (Nanoseconds one_second) []
+    let pollfds = Poll.create () in
+    try
+      ignore @@ Poll.ppoll pollfds 0 (Nanoseconds U.one_second_in_ns) [];
+      check_bool "has_ppoll true" Poll.has_ppoll true
+    with
+      Unix.Unix_error (Unix.ENOSYS,_,_) ->
+      check_bool "has_ppoll false" Poll.has_ppoll false
+
+  let ppoll_or_poll () =
+    let poll = Poll.create () in
+    let n = Poll.ppoll_or_poll poll 0 Nowait in
+    check_int "n is zero" n 0;
+    let n = Poll.ppoll_or_poll poll 0 (Nanoseconds U.hundred_ms_in_ns) in
+    check_int "n is zero" n 0
 
   let example () =
     let poll = Poll.create () in
@@ -91,6 +105,7 @@ module T = struct
     run "Iomux" [
       "unit",                  [ test_case "" `Quick (wlc basic) ];
       "ppoll_timo",            [ test_case "" `Quick (wlc ppoll_timo) ];
+      "ppoll_or_poll",         [ test_case "" `Quick (wlc ppoll_or_poll) ];
       "example",               [ test_case "" `Quick (wlc example) ];
     ]
 
