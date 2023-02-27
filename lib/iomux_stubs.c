@@ -31,25 +31,12 @@ caml_iomux_poll(value v_fds, value v_nfds, value v_timo)
 	fds = Caml_ba_data_val(v_fds);
 	nfds = Int_val(v_nfds);
 	timo = Int_val(v_timo);
-#if 0
-	for (int i = 0; i < nfds; i++) {
-		printf("[%d] fd = %d events=0x%x (nfds=%d)\n",
-		    i, fds[i].fd, fds[i].events, nfds);
-	}
-#endif
+
 	caml_enter_blocking_section();
 	r = poll(fds, nfds, timo);
 	caml_leave_blocking_section();
 	if (r == -1) /* this allocs */
 		uerror("poll", Nothing);
-
-#if 0
-	printf("r=%d\n", r);
-	for (int i = 0; i < 10; i++) {
-		printf("[%d] fd = %d events=0x%x revents=0x%x(nfds=%d)\n",
-		    i, fds[i].fd, fds[i].events, fds[i].revents, nfds);
-	}
-#endif
 
 	CAMLreturn(Val_int(r));
 }
@@ -97,25 +84,12 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 		decode_sigset(v_sigmask, &sigmask);
 		psigmask = &sigmask;
 	}
-#if 0
-	for (int i = 0; i < nfds; i++) {
-		printf("[%d] fd = %d events=0x%x (nfds=%d)\n",
-		    i, fds[i].fd, fds[i].events, nfds);
-	}
-#endif
+
 	caml_enter_blocking_section();
 	r = ppoll(fds, nfds, timo, psigmask);
 	caml_leave_blocking_section();
 	if (r == -1) /* this allocs */
 		uerror("ppoll", Nothing);
-
-#if 0
-	printf("r=%d\n", r);
-	for (int i = 0; i < 10; i++) {
-		printf("[%d] fd = %d events=0x%x revents=0x%x(nfds=%d)\n",
-		    i, fds[i].fd, fds[i].events, fds[i].revents, nfds);
-	}
-#endif
 
 	CAMLreturn(Val_int(r));
 #else /* HAS_PPOLL */

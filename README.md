@@ -2,8 +2,6 @@
 
 [API ONLINE](https://haesbaert.github.io/ocaml-iomux)
 
-[![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https://ci.ocamllabs.io/badge/haesbaert/ocaml-iomux/main&logo=ocaml)](https://ci.ocamllabs.io/github/haesbaert/ocaml-iomux)
-
 This aims to provide very direct, as in low level bindings to poll(2),
 ppoll(2), kevent(2) and epoll(2). At this time just poll(2) and
 ppoll(2) are implemented.
