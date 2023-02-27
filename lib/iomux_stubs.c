@@ -9,6 +9,8 @@
 #include <caml/unixsupport.h>
 #include <caml/signals.h>
 
+#include "config.h"
+
 /* only defined in the runtime with CAML_INTERNALS */
 CAMLextern int caml_convert_signal_number (int);
 
@@ -65,6 +67,7 @@ decode_sigset(value vset, sigset_t * set)
 value
 caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 {
+#ifdef HAS_PPOLL
 	CAMLparam4(v_fds, v_nfds, v_timo, v_sigmask);
 	struct pollfd *fds;
 	struct timespec *timo;
@@ -101,7 +104,7 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 	r = ppoll(fds, nfds, timo, psigmask);
 	caml_leave_blocking_section();
 	if (r == -1) /* this allocs */
-		uerror("poll", Nothing);
+		uerror("ppoll", Nothing);
 
 #if 0
 	printf("r=%d\n", r);
@@ -112,6 +115,10 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 #endif
 
 	CAMLreturn(Val_int(r));
+#else /* HAS_PPOLL */
+	errno = ENOSYS;
+	uerror("ppoll", Nothing);
+#endif /* HAS_PPOLL */
 }
 #undef S_IN_NS
 

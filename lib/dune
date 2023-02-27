@@ -1,5 +1,5 @@
 (rule
- (targets config.ml)
+ (targets config.ml config.h)
  (action (run ./include/discover.exe)))
 
 (library

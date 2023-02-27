@@ -51,6 +51,10 @@ module Flags : sig
 
 end
 
+val has_ppoll : bool
+(** [has_ppoll] is true if the system supports the ppoll(2) system
+    call. Notably macos as of 2023 does not have it. *)
+
 val invalid_fd : Unix.file_descr
 (** [invalid_fd] is the {!Unix.file_descr} of value -1. *)
 
@@ -77,7 +81,20 @@ type ppoll_timeout =
 val ppoll : t -> int -> ppoll_timeout -> int list -> int
 (** [ppoll t nfds timeout sigmask] is like {!poll} but supports
     nanoseconds and a list of signals that are atomically masked
-    during execution and restored uppon return. *)
+    during execution and restored uppon return. If the system does not
+    {!has_ppoll} this call will raise {!Unix.Unix_error} with
+    ENOSYS. You most likely want to use {!ppoll_or_poll}, see
+    below. *)
+
+(** A more portable ppoll(2) call *)
+val ppoll_or_poll : t -> int -> ppoll_timeout -> int
+(** [ppoll_or_poll t nfds tiemout] is like {!ppoll} if the system
+    {!has_ppoll}, otherwise the call is emulated via {!poll}, notably
+    the timeout is internally converted to milliseconds and there is
+    no support for signal masking. You most likely want to use this
+    instead of {!ppoll}, the two calls are kept to prevent the user
+    from expecting nanoseconds resolution from an emulated {!ppoll}
+    call. *)
 
 val set_index : t -> int -> Unix.file_descr -> Flags.t -> unit
 (** [set_index t index fd flag] modifies the internal buffer at

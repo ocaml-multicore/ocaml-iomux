@@ -30,6 +30,8 @@ module Flags = struct
   let of_int = Fun.id
 end
 
+let has_ppoll = Config.has_ppoll
+
 let invalid_fd = unix_of_fd (-1)
 
 type t = {
@@ -62,6 +64,17 @@ let ppoll t used timeout sigmask =
     | Nanoseconds timo -> timo
   in
   Raw.ppoll t.buffer used timeout sigmask
+
+let ppoll_or_poll t used (timeout : ppoll_timeout) =
+  if has_ppoll then
+    ppoll t used timeout []
+  else
+    let timeout : poll_timeout = match timeout with
+      | Infinite -> Infinite
+      | Nowait -> Nowait
+      | Nanoseconds timo_ns -> Milliseconds Int64.(div timo_ns 1_000_000L |> to_int)
+    in
+    poll t used timeout
 
 let guard_index t index =
   if index >= t.maxfds then
