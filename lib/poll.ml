@@ -72,12 +72,13 @@ let ppoll_or_poll t used (timeout : ppoll_timeout) =
     let timeout : poll_timeout = match timeout with
       | Infinite -> Infinite
       | Nowait -> Nowait
-      | Nanoseconds timo_ns -> Milliseconds Int64.(div timo_ns 1_000_000L |> to_int)
+      | Nanoseconds timo_ns ->
+        Milliseconds (Int64.(to_int @@ div (add timo_ns 999_999L) 1_000_000L))
     in
     poll t used timeout
 
 let guard_index t index =
-  if index >= t.maxfds then
+  if index >= t.maxfds || index < 0 then
     invalid_arg "index out of bounds"
 
 let set_index t index fd events =
