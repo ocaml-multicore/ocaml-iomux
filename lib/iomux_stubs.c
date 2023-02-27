@@ -54,6 +54,7 @@ caml_iomux_poll(value v_fds, value v_nfds, value v_timo)
 	CAMLreturn(Val_int(r));
 }
 
+#ifdef HAS_PPOLL
 static void
 decode_sigset(value vset, sigset_t * set)
 {
@@ -63,6 +64,7 @@ decode_sigset(value vset, sigset_t * set)
 		sigaddset(set, sig);
 	}
 }
+#endif
 
 #define S_IN_NS 1000000000LL
 value
