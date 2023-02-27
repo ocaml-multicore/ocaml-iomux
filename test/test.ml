@@ -10,7 +10,7 @@ let check_bool = Alcotest.(check bool)
 module U = struct
   let with_leak_checker (f : unit -> unit) () =
     let fetch () =
-      let l = List.init 512 (fun _ -> Unix.(socket PF_UNIX SOCK_STREAM 0)) in
+      let l = List.init (Util.max_open_files () / 2) (fun _ -> Unix.(socket PF_UNIX SOCK_STREAM 0)) in
       List.iter Unix.close l;
       l
     in
