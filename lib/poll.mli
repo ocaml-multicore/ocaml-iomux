@@ -46,7 +46,7 @@ module Flags : sig
   val ( + ) : 'a t -> 'a t -> 'a t
   (** The union of flags, fancy way of doing {!lor}. *)
 
-  val mem : 'a t -> 'b t -> bool
+  val mem : 'a t -> 'a t -> bool
   (** [mem x y] checks if [y] belongs to [m]. The fancy way of doing {!land}. *)
 
   val to_int : 'inout t -> int
