@@ -36,7 +36,7 @@ module Flags = struct
   let of_int = Fun.id
 
   let input_of_int n =
-    if mem pollerr n || mem pollhup n || mem pollnval n then
+    if mem (pollerr + pollhup + pollnval) n then
       invalid_arg "Poll.Flag.input_of_int";
     n
 end
