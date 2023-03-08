@@ -15,20 +15,20 @@ module Flags : sig
 
   type output = < output: unit; >
 
-  type 'a input = < .. > as 'a
+  type 'a either = < .. > as 'a
 
-  type input_only = < >
+  type input = < >
 
   type 'inout t
   (** The actual set. *)
 
-  val pollin : 'a input t
+  val pollin : 'a either t
   (** POLLIN from poll(2). *)
 
-  val pollpri : 'a input t
+  val pollpri : 'a either t
   (** POLLPRI from poll(2). *)
 
-  val pollout : 'a input t
+  val pollout : 'a either t
   (** POLLOUT from poll(2). *)
 
   val pollerr : output t
@@ -40,7 +40,7 @@ module Flags : sig
   val pollnval : output t
   (** POLLNVAL from poll(2). Only expected as output, invalid as input. *)
 
-  val empty : 'a input t
+  val empty : 'a either t
   (** aka zero. *)
 
   val ( + ) : 'a t -> 'a t -> 'a t
@@ -55,7 +55,7 @@ module Flags : sig
   val of_int : int -> 'inout t
   (** [of_int x] imports [x] as {!t}, this is an identity function. *)
 
-  val input_of_int : int -> input_only t
+  val input_of_int : int -> input t
 end
 
 val invalid_fd : Unix.file_descr
@@ -86,7 +86,7 @@ val ppoll : t -> int -> ppoll_timeout -> int list -> int
     nanoseconds and a list of signals that are atomically masked
     during execution and restored uppon return. *)
 
-val set_index : t -> int -> Unix.file_descr -> Flags.input_only Flags.t -> unit
+val set_index : t -> int -> Unix.file_descr -> Flags.input Flags.t -> unit
 (** [set_index t index fd flag] modifies the internal buffer at
     [index] to listen to [flag] events of [fd]. This overwrites any
     previous value of [flag] and [fd] internally. {!invalid_fd} (-1)

@@ -13,9 +13,9 @@ end
 module Flags = struct
   type output = < output: unit; >
 
-  type 'a input = < .. > as 'a
+  type 'a either = < .. > as 'a
 
-  type input_only = < >
+  type input = < >
 
   type 'a t = int
 
