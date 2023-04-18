@@ -36,6 +36,14 @@ end
 
 module T = struct
 
+  let init () =
+    let maxfds = 1024 in
+    let poll = Poll.create ~maxfds () in
+    for i = 0 to maxfds - 1 do
+      let v = (Poll.get_fd poll i) = Poll.invalid_fd in
+      check_bool "initialized" v true
+    done
+
   let basic () =
     let poll = Poll.create ~maxfds:16 () in
     let r, w = Unix.pipe () in
@@ -103,6 +111,7 @@ module T = struct
     let open Alcotest in
     let wlc = U.with_leak_checker in
     run "Iomux" [
+      "init",                  [ test_case "" `Quick (wlc init) ];
       "unit",                  [ test_case "" `Quick (wlc basic) ];
       "ppoll_timo",            [ test_case "" `Quick (wlc ppoll_timo) ];
       "ppoll_or_poll",         [ test_case "" `Quick (wlc ppoll_or_poll) ];
