@@ -100,7 +100,7 @@ caml_iomux_ppoll(value v_fds, value v_nfds, value v_timo, value v_sigmask)
 #undef S_IN_NS
 
 #define pollfd_of_index(vfds, vindex)					\
-	((struct pollfd *)Caml_ba_data_val(vfds) + (Int_val (v_index)))
+	((struct pollfd *)Caml_ba_data_val(vfds) + (Int_val (vindex)))
 
 value /* noalloc */
 caml_iomux_poll_set_index(value v_fds, value v_index, value v_fd, value v_events)
