@@ -116,7 +116,7 @@ caml_iomux_poll_set_index(value v_fds, value v_index, value v_fd, value v_events
 value
 caml_iomux_poll_init(value v_fds, value v_maxfds)
 {
-	CAMLparam1(v_fds);
+	CAMLparam2(v_fds, v_maxfds);
 	struct pollfd *pfd = pollfd_of_index(v_fds, Val_int(0));
 	int maxfds = Int_val(v_maxfds);
 	int i;
