@@ -22,6 +22,7 @@ module Raw = struct
   external poll : buffer -> int -> int -> int = "caml_iomux_poll"
   external ppoll : buffer -> int -> int64 -> int list -> int = "caml_iomux_ppoll"
   external set_index : buffer -> int -> int -> int -> unit = "caml_iomux_poll_set_index" [@@noalloc]
+  external init : buffer -> int -> unit = "caml_iomux_poll_init"
   external get_revents : buffer -> int -> int = "caml_iomux_poll_get_revents" [@@noalloc]
   external get_fd : buffer -> int -> int = "caml_iomux_poll_get_fd" [@@noalloc]
 end
@@ -117,9 +118,7 @@ let create ?(maxfds=Util.max_open_files ()) () =
   let len = maxfds * Config.sizeof_pollfd in
   let buffer = Bigarray.(Array1.create char c_layout len) in
   let t = { buffer; maxfds } in
-  for i = 0 to maxfds - 1 do
-    invalidate_index t i
-  done;
+  Raw.init buffer maxfds;
   t
 
 let maxfds t = t.maxfds

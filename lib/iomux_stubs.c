@@ -113,6 +113,23 @@ caml_iomux_poll_set_index(value v_fds, value v_index, value v_fd, value v_events
 	return (Val_unit);
 }
 
+value
+caml_iomux_poll_init(value v_fds, value v_maxfds)
+{
+	CAMLparam1(v_fds);
+	struct pollfd *pfd = pollfd_of_index(v_fds, Val_int(0));
+	int maxfds = Int_val(v_maxfds);
+	int i;
+
+	for (i = 0; i < maxfds; i++, pfd++) {
+		pfd->fd = -1;
+		pfd->events = 0;
+	}
+
+	CAMLreturn(Val_unit);
+}
+
+
 value /* noalloc */
 caml_iomux_poll_get_revents(value v_fds, value v_index)
 {
