@@ -103,7 +103,7 @@ val ppoll : t -> int -> ppoll_timeout -> int list -> int
     below. *)
 
 (** A more portable ppoll(2) call *)
-val ppoll_or_poll : t -> int -> ppoll_timeout -> int
+val ppoll_or_poll_or_kqueue : t -> int -> ppoll_timeout -> int
 (** [ppoll_or_poll t nfds tiemout] is like {!ppoll} if the system
     {!has_ppoll}, otherwise the call is emulated via {!poll}, notably
     the timeout is internally converted to milliseconds and there is

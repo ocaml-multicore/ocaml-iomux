@@ -16,6 +16,7 @@
    (ocaml (>= 4.08))
    dune
    dune-configurator
+   kqueue
    (alcotest :with-test))
  (tags
   (io multiplexing poll ppoll epoll kevent kqueue)))

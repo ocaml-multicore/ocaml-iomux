@@ -49,10 +49,26 @@ end
 
 let has_ppoll = Config.has_ppoll
 
+let has_kqueue = Kqueue.available
+
 let invalid_fd = unix_of_fd (-1)
 
+type kqueue = {
+  kq : Kqueue.t;
+  changelist : Kqueue.Event_list.t;
+  mutable eventlist : Kqueue.Event_list.t;
+}
+
+type fds =
+  | Poll of buffer
+  | Kqueue of kqueue
+
+let get_poll = function
+  | Poll b -> b
+  | Kqueue _ -> assert false
+
 type t = {
-  buffer : buffer;
+  buffer : fds;
   maxfds : int;
 }
 
@@ -67,7 +83,7 @@ let poll t used timeout =
     | Nowait -> 0
     | Milliseconds ms -> ms
   in
-  Raw.poll t.buffer used timeout
+  Raw.poll (get_poll t.buffer) used timeout
 
 type ppoll_timeout =
   | Infinite
@@ -80,19 +96,33 @@ let ppoll t used timeout sigmask =
     | Nowait -> Int64.zero
     | Nanoseconds timo -> timo
   in
-  Raw.ppoll t.buffer used timeout sigmask
+  Raw.ppoll (get_poll t.buffer) used timeout sigmask
 
-let ppoll_or_poll t used (timeout : ppoll_timeout) =
-  if has_ppoll then
-    ppoll t used timeout []
-  else
-    let timeout : poll_timeout = match timeout with
-      | Infinite -> Infinite
-      | Nowait -> Nowait
-      | Nanoseconds timo_ns ->
-        Milliseconds (Int64.(to_int @@ div (add timo_ns 999_999L) 1_000_000L))
-    in
-    poll t used timeout
+let kqueue k nfds timeout =
+  let timeout = match timeout with
+    | Infinite -> Kqueue.Timeout.never
+    | Nowait -> Kqueue.Timeout.immediate
+    | Nanoseconds timo -> Kqueue.Timeout.of_ns timo
+  in
+  let eventlist = if nfds = 0 then Kqueue.Event_list.null else Kqueue.Event_list.create nfds in
+  let n = Kqueue.kevent k.kq ~changelist:Kqueue.Event_list.null ~eventlist timeout in
+  k.eventlist <- eventlist;
+  n
+
+let ppoll_or_poll_or_kqueue t used (timeout : ppoll_timeout) =
+  match t.buffer with
+  | Kqueue k -> kqueue k used timeout
+  | Poll _ ->
+    if has_ppoll then
+      ppoll t used timeout []
+    else
+      let timeout : poll_timeout = match timeout with
+        | Infinite -> Infinite
+        | Nowait -> Nowait
+        | Nanoseconds timo_ns ->
+          Milliseconds (Int64.(to_int @@ div (add timo_ns 999_999L) 1_000_000L))
+      in
+      poll t used timeout
 
 let guard_index t index =
   if index >= t.maxfds || index < 0 then
@@ -100,23 +130,65 @@ let guard_index t index =
 
 let set_index t index fd events =
   guard_index t index;
-  Raw.set_index t.buffer index (fd_of_unix fd) events
+  match t.buffer with
+  | Kqueue k ->
+    let changelist = Kqueue.Event_list.create 1 in
+    let ev1 = Kqueue.Event_list.get changelist 0 in
+    let filter =
+      if Flags.(mem events pollin) then Kqueue.Filter.read
+      else Kqueue.Filter.write
+    in
+    let ev2 = Kqueue.Event_list.get k.changelist index in
+    List.iter (fun ev ->
+    Kqueue.Event_list.Event.set_ident ev (Kqueue.Util.file_descr_to_int fd);
+    Kqueue.Event_list.Event.set_filter ev filter;
+    Kqueue.Event_list.Event.set_flags ev Kqueue.Flag.add) [ ev1; ev2 ];
+    let v : int = Kqueue.kevent k.kq ~changelist ~eventlist:Kqueue.Event_list.null Kqueue.Timeout.immediate in
+    assert (v = 0)
+  | Poll buffer -> Raw.set_index buffer index (fd_of_unix fd) events
 
 let invalidate_index t index =
   guard_index t index;
-  Raw.set_index t.buffer index (-1) 0
+  match t.buffer with
+  | Kqueue k ->
+    let ev = Kqueue.Event_list.get k.changelist index in
+    Kqueue.Event_list.Event.set_flags ev Kqueue.Flag.delete
+  | Poll buffer ->
+    Raw.set_index buffer index (-1) 0
+
+let kqueue_filter_to_poll f =
+  if Kqueue.Filter.(f = read) then Flags.pollin
+  else Flags.pollout
 
 let get_revents t index =
   guard_index t index;
-  Raw.get_revents t.buffer index
+  match t.buffer with
+  | Kqueue k ->
+    let ev = Kqueue.Event_list.get k.eventlist index in
+    Kqueue.Event_list.Event.get_filter ev |> kqueue_filter_to_poll
+  | Poll buffer ->
+    Raw.get_revents buffer index
 
 let get_fd t index =
   guard_index t index;
-  Raw.get_fd t.buffer index |> unix_of_fd
+  match t.buffer with
+  | Kqueue k ->
+    let ev = Kqueue.Event_list.get k.eventlist index in
+    Kqueue.Event_list.Event.get_ident ev |> Kqueue.Util.file_descr_of_int
+  | Poll buffer ->
+    Raw.get_fd buffer index |> unix_of_fd
 
 let create ?(maxfds=Util.max_open_files ()) () =
   let len = maxfds * Config.sizeof_pollfd in
-  let buffer = Bigarray.(Array1.create char c_layout len) in
+  let buffer =
+    if has_kqueue
+    then
+      let eventlist = Kqueue.Event_list.create 1 in
+      let changelist = Kqueue.Event_list.create maxfds in
+      let kq = { kq = Kqueue.create (); eventlist; changelist } in
+      Kqueue kq
+    else Poll (Bigarray.(Array1.create char c_layout len))
+  in
   let t = { buffer; maxfds } in
   Raw.init buffer maxfds;
   t
