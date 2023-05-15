@@ -147,6 +147,52 @@ caml_iomux_poll_get_fd(value v_fds, value v_index)
 }
 
 /*
+ * Epoll
+ */
+#ifdef HAS_EPOLL
+
+#include <sys/epoll.h>
+
+#define Event_val(v_event) ((struct epoll_event *)Caml_ba_data_val(v_event))
+
+value /* noalloc */
+caml_iomux_epoll_create(value v_size)
+{
+	return (Val_int(epoll_create(Int_val(v_size))));
+}
+
+value /* noalloc */
+caml_iomux_epoll_create1(value v_flags)
+{
+	return (Val_int(epoll_create1(Int_val(v_flags))));
+}
+
+value
+caml_iomux_epoll_wait(value v_efd, value v_events, value v_maxevents,
+    value v_timeout)
+{
+	CAMLparam4(v_efd, v_events, v_maxevents, v_timeout);
+	struct epoll_event *events;
+	int efd, maxevents, timeout, r;
+
+	efd = Int_val(v_efd);
+	events = Event_val(v_events);
+	maxevents = Int_val(v_maxevents);
+	timeout = Int_val(v_timeout);
+
+	caml_enter_blocking_section();
+	r = epoll_wait(efd, events, maxevents, timeout);
+	caml_leave_blocking_section();
+
+	if (r == -1) /* this allocs */
+		uerror("epoll", Nothing);
+
+	CAMLreturn(Val_int(r));
+}
+
+#endif	/* HAS_EPOLL */
+
+/*
  * Util
  */
 
