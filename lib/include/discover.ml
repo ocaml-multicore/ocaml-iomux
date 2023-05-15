@@ -82,6 +82,7 @@ let () =
           "EPOLL_CTL_ADD", Int;
           "EPOLL_CTL_DEL", Int;
           "EPOLL_CTL_MOD", Int;
+          "EPOLL_CLOEXEC", Int;
           "sizeof(struct epoll_event)", Int;
         ]
   in
