@@ -23,6 +23,7 @@ module Raw = struct
   external ppoll : buffer -> int -> int64 -> int list -> int = "caml_iomux_ppoll"
   external set_index : buffer -> int -> int -> int -> unit = "caml_iomux_poll_set_index" [@@noalloc]
   external init : buffer -> int -> unit = "caml_iomux_poll_init"
+  external get_events : buffer -> int -> int = "caml_iomux_poll_get_events" [@@noalloc]
   external get_revents : buffer -> int -> int = "caml_iomux_poll_get_revents" [@@noalloc]
   external get_fd : buffer -> int -> int = "caml_iomux_poll_get_fd" [@@noalloc]
 end
@@ -105,6 +106,10 @@ let set_index t index fd events =
 let invalidate_index t index =
   guard_index t index;
   Raw.set_index t.buffer index (-1) 0
+
+let get_events t index =
+  guard_index t index;
+  Raw.get_events t.buffer index
 
 let get_revents t index =
   guard_index t index;

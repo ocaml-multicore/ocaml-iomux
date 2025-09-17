@@ -53,8 +53,10 @@ module T = struct
     let nready = Poll.poll poll 1 Nowait in
     check_int "nready" nready 1;
     let fd = Poll.get_fd poll 0 in
+    let events = Poll.get_events poll 0 in
     let revents = Poll.get_revents poll 0 in
     check_bool "fd" true (r = fd);
+    check_bool "events" true (events = Poll.Flags.pollin);
     check_bool "revents" true (Poll.Flags.mem revents Poll.Flags.pollin);
     check_bool "revents-eq" true (revents = Poll.Flags.pollin);
     Unix.close w;

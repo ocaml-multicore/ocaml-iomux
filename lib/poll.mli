@@ -124,6 +124,10 @@ val invalidate_index : t -> int -> unit
     invalidating [index]. The kernel will ignore that slot. We also
     clear flags, just for kicks. *)
 
+val get_events : t -> int -> Flags.t
+(** [get_events t index] is the event flags to be listened for by the
+    file descriptor at [index]. *)
+
 val get_revents : t -> int -> Flags.t
 (** [get_revents t index] is the returned event flags set after a call
     to {!poll} or {!ppoll}. *)

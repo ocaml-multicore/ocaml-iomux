@@ -131,6 +131,14 @@ caml_iomux_poll_init(value v_fds, value v_maxfds)
 
 
 value /* noalloc */
+caml_iomux_poll_get_events(value v_fds, value v_index)
+{
+	struct pollfd *pfd = pollfd_of_index(v_fds, v_index);
+
+	return (Val_int(pfd->events));
+}
+
+value /* noalloc */
 caml_iomux_poll_get_revents(value v_fds, value v_index)
 {
 	struct pollfd *pfd = pollfd_of_index(v_fds, v_index);
